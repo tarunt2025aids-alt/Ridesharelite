@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Chemical Safety Tracker</title>
+</head>
+
+<body>
+
+<h1>Industrial Chemical Safety Tracker</h1>
+
+<h2>Add Chemical Vault</h2>
+
+<form action="/vaults/save" method="post">
+
+    <label>Vault Name:</label>
+    <input type="text" name="vaultName" required>
+    <br><br>
+
+    <label>Chemical Name:</label>
+    <input type="text" name="chemicalName" required>
+    <br><br>
+
+    <label>Chemical Type:</label>
+    <input type="text" name="chemicalType">
+    <br><br>
+
+    <label>Capacity:</label>
+    <input type="number" step="0.01" name="capacity">
+    <br><br>
+
+    <label>Current Quantity:</label>
+    <input type="number" step="0.01" name="currentQuantity">
+    <br><br>
+
+    <label>Safety Level:</label>
+    <input type="text" name="safetyLevel">
+    <br><br>
+
+    <label>Expiry Date:</label>
+    <input type="date" name="expiryDate">
+    <br><br>
+
+    <label>Status:</label>
+    <select name="status">
+        <option value="SAFE">SAFE</option>
+        <option value="WARNING">WARNING</option>
+        <option value="EXPIRED">EXPIRED</option>
+    </select>
+
+    <br><br>
+
+    <button type="submit">Add Vault</button>
+
+</form>
+
+<hr>
+
+<h2>Stored Chemical Vaults</h2>
+
+<table border="1">
+
+    <tr>
+        <th>ID</th>
+        <th>Vault Name</th>
+        <th>Chemical</th>
+        <th>Type</th>
+        <th>Capacity</th>
+        <th>Quantity</th>
+        <th>Safety</th>
+        <th>Expiry</th>
+        <th>Status</th>
+    </tr>
+
+    <tr th:each="vault : ${vaults}">
+
+        <td th:text="${vault.id}"></td>
+        <td th:text="${vault.vaultName}"></td>
+        <td th:text="${vault.chemicalName}"></td>
+        <td th:text="${vault.chemicalType}"></td>
+        <td th:text="${vault.capacity}"></td>
+        <td th:text="${vault.currentQuantity}"></td>
+        <td th:text="${vault.safetyLevel}"></td>
+        <td th:text="${vault.expiryDate}"></td>
+        <td th:text="${vault.status}"></td>
+
+    </tr>
+
+</table>
+
+</body>
+
+</html>

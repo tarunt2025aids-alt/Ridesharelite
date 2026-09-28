@@ -1,7 +1,7 @@
 package com.example.rideshare.controller;
 
 import com.example.rideshare.entity.RideOffer;
-import com.example.rideshare.repository.RideOfferRepository;
+import com.example.rideshare.service.RideOfferService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -10,30 +10,31 @@ import java.util.List;
 @RequestMapping("/rides")
 public class RideOfferController {
 
-    private final RideOfferRepository repository;
+    private final RideOfferService rideOfferService;
 
-    public RideOfferController(RideOfferRepository repository) {
-        this.repository = repository;
+    public RideOfferController(RideOfferService rideOfferService) {
+        this.rideOfferService = rideOfferService;
     }
 
     @PostMapping
     public RideOffer createRide(@RequestBody RideOffer ride) {
-        return repository.save(ride);
+        return rideOfferService.createRide(ride);
     }
 
     @GetMapping
     public List<RideOffer> getRides() {
-        return repository.findAll();
+        return rideOfferService.getAllRides();
+    }
+
+    @GetMapping("/{id}")
+    public RideOffer getRideById(@PathVariable Long id) {
+        return rideOfferService.getRideById(id);
     }
 
     @GetMapping("/search")
     public List<RideOffer> searchRide(
             @RequestParam String origin,
             @RequestParam String destination) {
-
-        return repository.findByOriginAndDestination(
-                origin,
-                destination
-        );
+        return rideOfferService.searchRide(origin, destination);
     }
 }

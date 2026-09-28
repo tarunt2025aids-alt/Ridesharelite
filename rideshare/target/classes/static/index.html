@@ -84,6 +84,8 @@
 
     <p id="userMessage"></p>
 
+    <div id="userList" class="user-list"></div>
+
   </div>
 
 </section>
@@ -199,96 +201,167 @@
 <script>
 
   async function createUser() {
-
-    console.log("Create User button clicked");
-
     const name = document.getElementById("name").value.trim();
     const email = document.getElementById("email").value.trim();
     const phone = document.getElementById("phone").value.trim();
 
-    if (name === "" || email === "" || phone === "") {
-
+    if (!name || !email || !phone) {
       alert("Please fill all fields");
       return;
     }
 
-    const user = {
-      name: name,
-      email: email,
-      phone: phone
-    };
-
-    console.log("Sending:", user);
+    const user = { name, email, phone };
 
     try {
-
-      const response = await fetch("/users", {
-
+      const response = await fetch("http://localhost:8081/users", {
         method: "POST",
-
-        headers: {
-          "Content-Type": "application/json"
-        },
-
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(user)
-
       });
-
-      console.log("Response status:", response.status);
 
       const text = await response.text();
 
-      console.log("Response:", text);
-
       if (!response.ok) {
-
-        throw new Error(
-                "Server error " +
-                response.status +
-                ": " +
-                text
-        );
+        throw new Error(text || "Failed to create user");
       }
 
       const data = JSON.parse(text);
-
-      alert(
-              "User created successfully!\n\n" +
-              "User ID: " + data.id
-      );
+      const messageBox = document.getElementById("userMessage");
+      messageBox.textContent = "User created successfully! ID: " + data.id;
 
       document.getElementById("name").value = "";
       document.getElementById("email").value = "";
       document.getElementById("phone").value = "";
 
-    }
-
-    catch (error) {
-
+      await loadUsers();
+    } catch (error) {
       console.error(error);
-
-      alert(
-              "User creation failed!\n\n" +
-              error.message
-      );
+      const messageBox = document.getElementById("userMessage");
+      messageBox.textContent = "User creation failed: " + error.message;
     }
   }
 
+  function renderUsers(users) {
+    const userList = document.getElementById("userList");
+    if (!userList) return;
 
-  /* Temporary functions so other buttons don't give errors */
+    if (!users || users.length === 0) {
+      userList.innerHTML = "<h3>Created Users</h3><p>No users created yet.</p>";
+      return;
+    }
 
-  function publishRide() {
-
-    alert("Publish Ride will be connected next.");
-
+    userList.innerHTML = `
+      <h3>Created Users</h3>
+      <ul>
+        ${users.map(user => `
+          <li>
+            <strong>ID:</strong> ${user.id} |
+            <strong>Name:</strong> ${user.name} |
+            <strong>Email:</strong> ${user.email} |
+            <strong>Phone:</strong> ${user.phone}
+          </li>
+        `).join("")}
+      </ul>
+    `;
   }
 
+  async function loadUsers() {
+    try {
+      const response = await fetch("http://localhost:8081/users");
+      if (!response.ok) throw new Error("Unable to load users");
 
-  function searchRides() {
-
-    alert("Search Ride will be connected next.");
-
+      const users = await response.json();
+      renderUsers(users);
+    } catch (error) {
+      console.error(error);
+      const userList = document.getElementById("userList");
+      if (userList) {
+        userList.innerHTML = "<h3>Created Users</h3><p>Unable to load users.</p>";
+      }
+    }
   }
+
+  async function publishRide() {
+    const driverId = document.getElementById("driverId").value.trim();
+    const origin = document.getElementById("origin").value.trim();
+    const destination = document.getElementById("destination").value.trim();
+    const departureTime = document.getElementById("departureTime").value.trim();
+    const seats = document.getElementById("seats").value.trim();
+
+    if (!driverId || !origin || !destination || !departureTime || !seats) {
+      alert("Please fill in all ride details.");
+      return;
+    }
+
+    const ride = {
+      origin,
+      destination,
+      departureTime,
+      seatsAvailable: Number(seats),
+      driver: { id: Number(driverId) }
+    };
+
+    try {
+      const response = await fetch("http://localhost:8081/rides", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(ride)
+      });
+
+      const text = await response.text();
+      if (!response.ok) throw new Error(text || "Failed to publish ride");
+
+      const data = JSON.parse(text);
+      document.getElementById("rideMessage").textContent = "Ride published successfully! Ride ID: " + data.id;
+
+      document.getElementById("driverId").value = "";
+      document.getElementById("origin").value = "";
+      document.getElementById("destination").value = "";
+      document.getElementById("departureTime").value = "";
+      document.getElementById("seats").value = "";
+    } catch (error) {
+      console.error(error);
+      document.getElementById("rideMessage").textContent = "Ride publishing failed: " + error.message;
+    }
+  }
+
+  async function searchRides() {
+    const origin = document.getElementById("searchOrigin").value.trim();
+    const destination = document.getElementById("searchDestination").value.trim();
+
+    if (!origin || !destination) {
+      alert("Please enter origin and destination.");
+      return;
+    }
+
+    try {
+      const response = await fetch(`http://localhost:8081/rides/search?origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}`);
+      if (!response.ok) throw new Error("Search request failed");
+
+      const rides = await response.json();
+      const resultsContainer = document.getElementById("rideResults");
+
+      if (!rides.length) {
+        resultsContainer.innerHTML = "<p>No rides found for the selected route.</p>";
+        return;
+      }
+
+      resultsContainer.innerHTML = rides.map(ride => `
+        <div class="ride-card">
+          <h3>Ride ID: ${ride.id}</h3>
+          <p><strong>Origin:</strong> ${ride.origin}</p>
+          <p><strong>Destination:</strong> ${ride.destination}</p>
+          <p><strong>Departure:</strong> ${ride.departureTime}</p>
+          <p><strong>Seats:</strong> ${ride.seatsAvailable}</p>
+        </div>
+      `).join("");
+    } catch (error) {
+      console.error(error);
+      document.getElementById("rideResults").innerHTML = "<p>Unable to search rides right now.</p>";
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", loadUsers);
 
 </script>
 

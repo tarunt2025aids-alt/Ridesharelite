@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>RideShareLite</title>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header>
+  <div class="logo">🚗 RideShareLite</div>
+
+  <nav>
+    <a href="#home">Home</a>
+    <a href="#create-user">Create User</a>
+    <a href="#publish">Publish Ride</a>
+    <a href="#search">Find Ride</a>
+  </nav>
+</header>
+
+
+<!-- HOME -->
+
+<section id="home" class="hero">
+
+  <div class="hero-content">
+
+    <h1>Share Your Ride.<br>Save Money.</h1>
+
+    <p>
+      Find office and college carpool partners
+      travelling on the same route.
+    </p>
+
+    <a href="#search" class="btn">
+      Find a Ride
+    </a>
+
+  </div>
+
+</section>
+
+
+<!-- CREATE USER -->
+
+<section id="create-user" class="container">
+
+  <h2>👤 Create User</h2>
+
+  <div class="card">
+
+    <label>Name</label>
+
+    <input
+            type="text"
+            id="name"
+            placeholder="Enter your name">
+
+
+    <label>Email</label>
+
+    <input
+            type="email"
+            id="email"
+            placeholder="Enter your email">
+
+
+    <label>Phone</label>
+
+    <input
+            type="text"
+            id="phone"
+            placeholder="Enter phone number">
+
+
+    <button type="button" onclick="createUser()">
+      Create User
+    </button>
+
+    <p id="userMessage"></p>
+
+  </div>
+
+</section>
+
+
+<!-- PUBLISH RIDE -->
+
+<section id="publish" class="container">
+
+  <h2>🚘 Publish Your Ride</h2>
+
+  <div class="card">
+
+    <label>Driver User ID</label>
+
+    <input
+            type="number"
+            id="driverId"
+            placeholder="Driver ID">
+
+
+    <label>Origin</label>
+
+    <input
+            type="text"
+            id="origin"
+            placeholder="Origin">
+
+
+    <label>Destination</label>
+
+    <input
+            type="text"
+            id="destination"
+            placeholder="Destination">
+
+
+    <label>Departure Time</label>
+
+    <input
+            type="datetime-local"
+            id="departureTime">
+
+
+    <label>Available Seats</label>
+
+    <input
+            type="number"
+            id="seats"
+            min="1"
+            placeholder="Available seats">
+
+
+    <button type="button" onclick="publishRide()">
+      Publish Ride
+    </button>
+
+    <p id="rideMessage"></p>
+
+  </div>
+
+</section>
+
+
+<!-- SEARCH -->
+
+<section id="search" class="container">
+
+  <h2>🔍 Find a Ride</h2>
+
+  <div class="card">
+
+    <label>Origin</label>
+
+    <input
+            type="text"
+            id="searchOrigin"
+            placeholder="Origin">
+
+
+    <label>Destination</label>
+
+    <input
+            type="text"
+            id="searchDestination"
+            placeholder="Destination">
+
+
+    <button type="button" onclick="searchRides()">
+      Search Rides
+    </button>
+
+  </div>
+
+  <div id="rideResults"></div>
+
+</section>
+
+
+<!-- FOOTER -->
+
+<footer>
+
+  <p>
+    © 2026 RideShareLite | Office & College Carpool
+  </p>
+
+</footer>
+
+
+<!-- JAVASCRIPT -->
+
+<script>
+
+  async function createUser() {
+
+    console.log("Create User button clicked");
+
+    const name = document.getElementById("name").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const phone = document.getElementById("phone").value.trim();
+
+    if (name === "" || email === "" || phone === "") {
+
+      alert("Please fill all fields");
+      return;
+    }
+
+    const user = {
+      name: name,
+      email: email,
+      phone: phone
+    };
+
+    console.log("Sending:", user);
+
+    try {
+
+      const response = await fetch("/users", {
+
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/json"
+        },
+
+        body: JSON.stringify(user)
+
+      });
+
+      console.log("Response status:", response.status);
+
+      const text = await response.text();
+
+      console.log("Response:", text);
+
+      if (!response.ok) {
+
+        throw new Error(
+                "Server error " +
+                response.status +
+                ": " +
+                text
+        );
+      }
+
+      const data = JSON.parse(text);
+
+      alert(
+              "User created successfully!\n\n" +
+              "User ID: " + data.id
+      );
+
+      document.getElementById("name").value = "";
+      document.getElementById("email").value = "";
+      document.getElementById("phone").value = "";
+
+    }
+
+    catch (error) {
+
+      console.error(error);
+
+      alert(
+              "User creation failed!\n\n" +
+              error.message
+      );
+    }
+  }
+
+
+  /* Temporary functions so other buttons don't give errors */
+
+  function publishRide() {
+
+    alert("Publish Ride will be connected next.");
+
+  }
+
+
+  function searchRides() {
+
+    alert("Search Ride will be connected next.");
+
+  }
+
+</script>
+
+
+</body>
+
+</html>
